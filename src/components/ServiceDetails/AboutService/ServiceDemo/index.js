@@ -19,7 +19,11 @@ const demoProgressStatus = {
 
 class ServiceDemo extends Component {
   state = {
-    progressText: [{ label: "Purchase" }, { label: "Configure" }, { label: "Results", status: undefined }],
+    progressText: [
+      { label: "Purchase" },
+      { label: "Configure" },
+      { label: "Results", status: undefined },
+    ],
     purchaseCompleted: false,
     isServiceExecutionComplete: false,
     alert: {},
@@ -29,9 +33,9 @@ class ServiceDemo extends Component {
     return;
   };
 
-  componentWillUnmount = () => {
-    this.props.stopWalletDetailsPolling();
-  };
+  // componentWillUnmount = () => {
+  //   this.props.stopWalletDetailsPolling();
+  // };
 
   checkForPaymentsInProgress = async () => {
     const {
@@ -47,7 +51,13 @@ class ServiceDemo extends Component {
     if (orderId && paymentId && paypalPaymentId && PayerID) {
       const { data } = await fetchOrderDetails(orderId);
       const orderType = data.item_details.order_type;
-      updatePaypalInProgress(orderId, orderType, paymentId, paypalPaymentId, PayerID);
+      updatePaypalInProgress(
+        orderId,
+        orderType,
+        paymentId,
+        paypalPaymentId,
+        PayerID
+      );
       return updateWallet({ type: "walletTypes.GENERAL" });
     }
   };
@@ -82,9 +92,17 @@ class ServiceDemo extends Component {
 
   computeActiveSection = () => {
     const { purchaseCompleted, isServiceExecutionComplete } = this.state;
-    const { purchasing, executingAIservice, displayingResponse } = demoProgressStatus;
+    const {
+      purchasing,
+      executingAIservice,
+      displayingResponse,
+    } = demoProgressStatus;
 
-    return purchaseCompleted ? (isServiceExecutionComplete ? displayingResponse : executingAIservice) : purchasing;
+    return purchaseCompleted
+      ? isServiceExecutionComplete
+        ? displayingResponse
+        : executingAIservice
+      : purchasing;
   };
 
   serviceRequestStartHandler = () => {
@@ -93,10 +111,10 @@ class ServiceDemo extends Component {
   };
 
   serviceRequestCompleteHandler = () => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       return {
         isServiceExecutionComplete: true,
-        progressText: prevState.progressText.map(item => {
+        progressText: prevState.progressText.map((item) => {
           if (item.label === "Results") {
             item.status = progressTabStatus.SUCCESS;
           }
@@ -108,18 +126,20 @@ class ServiceDemo extends Component {
   };
 
   handleResetAndRun = () => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       return {
         purchaseCompleted: false,
         isServiceExecutionComplete: false,
         alert: {},
-        progressText: prevState.progressText.map(item => ({ label: item.label })),
+        progressText: prevState.progressText.map((item) => ({
+          label: item.label,
+        })),
       };
     });
     this.fetchFreeCallsUsage();
   };
 
-  serviceRequestErrorHandler = error => {
+  serviceRequestErrorHandler = (error) => {
     const alert = { type: alertTypes.ERROR };
     if (error.response && error.response.data && error.response.data.error) {
       alert.message = error.response.data.error;
@@ -137,10 +157,13 @@ class ServiceDemo extends Component {
     this.setState({ purchaseCompleted: true });
   };
 
-  handlePurchaseError = error => {
+  handlePurchaseError = (error) => {
     this.setState({
       purchaseCompleted: false,
-      alert: { type: alertTypes.ERROR, message: "Purchase could not be completed. Please try again" },
+      alert: {
+        type: alertTypes.ERROR,
+        message: "Purchase could not be completed. Please try again",
+      },
     });
     this.props.stopLoader();
   };
@@ -155,9 +178,12 @@ class ServiceDemo extends Component {
       wallet,
     } = this.props;
 
-    console.log("calls", freeCallsAllowed, freeCallsRemaining);
-
-    const { progressText, purchaseCompleted, isServiceExecutionComplete, alert } = this.state;
+    const {
+      progressText,
+      purchaseCompleted,
+      isServiceExecutionComplete,
+      alert,
+    } = this.state;
 
     const {
       handleResetAndRun,
@@ -170,7 +196,10 @@ class ServiceDemo extends Component {
     return (
       <div className={classes.demoExampleContainer}>
         <h3>Process</h3>
-        <ProgressBar activeSection={this.computeActiveSection()} progressText={progressText} />
+        <ProgressBar
+          activeSection={this.computeActiveSection()}
+          progressText={progressText}
+        />
         <PurchaseToggler
           groupInfo={groupInfo}
           purchaseCompleted={purchaseCompleted}
@@ -199,14 +228,18 @@ class ServiceDemo extends Component {
   }
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   freeCalls: "unlimited",
-  groupInfo: ""
+  groupInfo: "",
 });
 
 const mapDispatchToProps = (dispatch, ownProps) => ({
   startLoader: () =>
-    dispatch(loaderActions.startAppLoader(LoaderContent.SERVICE_INVOKATION(ownProps.service.display_name))),
+    dispatch(
+      loaderActions.startAppLoader(
+        LoaderContent.SERVICE_INVOKATION(ownProps.service.display_name)
+      )
+    ),
   stopLoader: () => dispatch(loaderActions.stopAppLoader),
   //fetchMeteringData: args => dispatch(serviceDetailsActions.fetchMeteringData(args)),
   //startWalletDetailsPolling: (orgId, groupId) => dispatch(userActions.startWalletDetailsPolling(orgId, groupId)),
@@ -214,9 +247,13 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
   //fetchOrderDetails: orderId => dispatch(paymentActions.fetchOrderDetails(orderId)),
   //updateWallet: walletDetails => dispatch(userActions.updateWallet(walletDetails)),
   //updatePaypalInProgress: (orderId, orderType, paymentId, paypalPaymentId, PayerID) =>
-    //dispatch(paymentActions.updatePaypalInProgress(orderId, orderType, paymentId, paypalPaymentId, PayerID)),
-  startInitServiceDemoLoader: () => dispatch(loaderActions.startAppLoader(LoaderContent.INIT_SERVICE_DEMO)),
+  //dispatch(paymentActions.updatePaypalInProgress(orderId, orderType, paymentId, paypalPaymentId, PayerID)),
+  startInitServiceDemoLoader: () =>
+    dispatch(loaderActions.startAppLoader(LoaderContent.INIT_SERVICE_DEMO)),
   //fetchUSDConversionRate: () => dispatch(paymentActions.fetchUSDConversionRate),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(useStyles)(withRouter(ServiceDemo)));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(useStyles)(withRouter(ServiceDemo)));

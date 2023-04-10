@@ -11,7 +11,6 @@ const Purchase = ({
   handlePurchaseError,
   isServiceAvailable,
 }) => {
-  console.log(freeCallsRemaining, freeCallsAllowed);
   return (
     <ActiveSession
       freeCallsRemaining={freeCallsRemaining}

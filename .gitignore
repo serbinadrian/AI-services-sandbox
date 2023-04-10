@@ -55,7 +55,6 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
 .env*.local
 
 # next.js build output
@@ -66,9 +65,6 @@ build/
 
 #deploy Paths
 scripts/path.js
-
-#redux_dev_tools
-src/Redux/Store.js
 
 #IDE files
 .idea

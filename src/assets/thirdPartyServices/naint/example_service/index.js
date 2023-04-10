@@ -1,5 +1,6 @@
 import React from "react";
 import Grid from "@material-ui/core/Grid";
+import OutlinedTextArea from "../../common/OutlinedTextArea";
 import Button from "@material-ui/core/Button";
 import SvgIcon from "@material-ui/core/SvgIcon";
 import InfoIcon from "@material-ui/icons/Info";
@@ -12,9 +13,12 @@ class ExampleService extends React.Component {
   constructor(props) {
     super(props);
     this.submitAction = this.submitAction.bind(this);
+    this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
     this.state = {
-      response: "",
+      response: {
+        data: "result123",
+      },
       data: {
         text: "",
         numbers: "",
@@ -24,11 +28,21 @@ class ExampleService extends React.Component {
         users_guide: "https://beta.singularitynet.io",
         reference: "https://beta.singularitynet.io",
       },
+      maxTextLength: 100,
+      maxNumbersLength: 10,
     };
   }
 
   canBeInvoked() {
     return false;
+  }
+
+  handleFormUpdate(event) {
+    const { data } = this.state;
+    data[event.target.name] = event.target.value;
+    this.setState({
+      data: data,
+    });
   }
 
   submitAction() {
@@ -62,6 +76,42 @@ class ExampleService extends React.Component {
     return (
       <React.Fragment>
         <Grid container spacing={2} justify="flex-start">
+          <Grid item xs={12} container justify="center">
+            <OutlinedTextArea
+              id="text"
+              name="text"
+              label="Only Latin"
+              charLimit={this.state.maxTextLength}
+              helperTxt={
+                this.state.data.text.length +
+                " / " +
+                this.state.maxTextLength +
+                " char "
+              }
+              fullWidth={true}
+              value={this.state.data.text}
+              rows={1}
+              onChange={this.handleFormUpdate}
+            />
+          </Grid>
+          <Grid item xs={12} container justify="center">
+            <OutlinedTextArea
+              id="numbers"
+              name="numbers"
+              label="Only number"
+              charLimit={this.state.maxNumbersLength}
+              helperTxt={
+                this.state.data.numbers.length +
+                " / " +
+                this.state.maxNumbersLength +
+                " char "
+              }
+              fullWidth={true}
+              value={this.state.data.numbers}
+              rows={1}
+              onChange={this.handleFormUpdate}
+            />
+          </Grid>
           <Grid item xs container justify="flex-end">
             <Grid item>
               <HoverIcon
@@ -94,17 +144,33 @@ class ExampleService extends React.Component {
               </HoverIcon>
             </Grid>
           </Grid>
+        </Grid>
+        <Grid item xs={12} container justify="center">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={this.submitAction}
+            disabled={!this.canBeInvoked()}
+          >
+            Invoke
+          </Button>
+        </Grid>
+      </React.Fragment>
+    );
+  }
 
-          <Grid item xs={12} container justify="center">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.submitAction}
-              disabled={!this.canBeInvoked()}
-            >
-              Invoke
-            </Button>
-          </Grid>
+  serviceAnswer() {
+    return (
+      <React.Fragment>
+        <Grid container spacing={2} justify="flex-start">
+          <OutlinedTextArea
+            id="result"
+            name="result"
+            label="Result is"
+            fullWidth={true}
+            value={this.state.response.data}
+            rows={1}
+          />
         </Grid>
       </React.Fragment>
     );
@@ -112,6 +178,9 @@ class ExampleService extends React.Component {
 
   render() {
     // const { classes } = this.props;
+    if (this.props.isComplete) {
+      return <>{this.serviceAnswer()}</>;
+    }
     return <>{this.renderForm()}</>;
   }
 }

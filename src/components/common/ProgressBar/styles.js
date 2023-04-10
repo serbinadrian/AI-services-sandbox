@@ -1,4 +1,10 @@
-export const useStyles = theme => ({
+export const useStyles = (theme) => ({
+  controllStateButtons: {
+    marginBottom: "20px",
+    width: "100%",
+    display: "flex",
+    justifyContent: "space-between",
+  },
   tabsContainer: {
     width: 630,
     paddingTop: 41,

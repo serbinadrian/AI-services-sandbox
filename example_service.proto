@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+// package name
+package example_service;
+
+// create query structure
+message Query {
+    string text = 1;
+    int32 numbers = 2;
+}
+
+// create answer structure
+message Answer {
+  string answer = 1;
+}
+
+// service name
+service example_service {
+    // main method to be called
+    rpc example_service(Query) returns (Answer) {}
+}

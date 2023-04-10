@@ -80,6 +80,25 @@ class ServiceDemo extends Component {
     }
   };
 
+  resetActiveSection = () => {
+    this.setState({
+      purchaseCompleted: false,
+      isServiceExecutionComplete: false
+    });
+  }
+
+  setPurchaseCompleted = () => {
+    this.setState({
+      purchaseCompleted: true,
+    });
+  }
+
+  setServiceExecutionCompleted = () => {
+    this.setState({
+      isServiceExecutionComplete: true
+    });
+  }
+
   computeActiveSection = () => {
     const { purchaseCompleted, isServiceExecutionComplete } = this.state;
     const { purchasing, executingAIservice, displayingResponse } = demoProgressStatus;
@@ -170,7 +189,16 @@ class ServiceDemo extends Component {
     return (
       <div className={classes.demoExampleContainer}>
         <h3>Process</h3>
-        <ProgressBar activeSection={this.computeActiveSection()} progressText={progressText} />
+        <ProgressBar 
+          activeSection={this.computeActiveSection()} 
+          progressText={progressText} 
+          demoProgressStatus={demoProgressStatus}
+          stateSwitchOptions={{
+            setResetActiveSection: this.resetActiveSection,
+            setPurchaseCompleted: this.setPurchaseCompleted,
+            setServiceExecutionCompleted: this.setServiceExecutionCompleted
+          }}
+          />
         <PurchaseToggler
           groupInfo={groupInfo}
           purchaseCompleted={purchaseCompleted}
@@ -214,7 +242,7 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
   //fetchOrderDetails: orderId => dispatch(paymentActions.fetchOrderDetails(orderId)),
   //updateWallet: walletDetails => dispatch(userActions.updateWallet(walletDetails)),
   //updatePaypalInProgress: (orderId, orderType, paymentId, paypalPaymentId, PayerID) =>
-    //dispatch(paymentActions.updatePaypalInProgress(orderId, orderType, paymentId, paypalPaymentId, PayerID)),
+  //dispatch(paymentActions.updatePaypalInProgress(orderId, orderType, paymentId, paypalPaymentId, PayerID)),
   startInitServiceDemoLoader: () => dispatch(loaderActions.startAppLoader(LoaderContent.INIT_SERVICE_DEMO)),
   //fetchUSDConversionRate: () => dispatch(paymentActions.fetchUSDConversionRate),
 });

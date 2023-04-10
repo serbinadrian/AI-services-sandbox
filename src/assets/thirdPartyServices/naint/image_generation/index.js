@@ -20,6 +20,7 @@ class NeuralImageGeneration extends React.Component {
     this.handleStyleParameterChange = this.handleStyleParameterChange.bind(this);
 
     this.state = {
+      response: "",
       modelParametersList: [
         {
           label: "Stable Diffusion",
@@ -114,7 +115,6 @@ class NeuralImageGeneration extends React.Component {
         stableDiffusionGuoHuaValue: 3,
         minDalleValue: 4,
       },
-      response: undefined,
       informationLinks: {
         users_guide: "https://github.com/iktina/image-generation-2.0",
         code_repo: "https://github.com/iktina/image-generation-2.0",
@@ -382,6 +382,11 @@ createImageContainer(index) {
   componentDidUpdate() {
     if (this.props.isComplete) {
       const { response } = this.state;
+
+      if(!response) {
+        return;
+      }
+
       const images = JSON.parse(response.data)?.images;
 
       if (!this.state.formState.rendered) {

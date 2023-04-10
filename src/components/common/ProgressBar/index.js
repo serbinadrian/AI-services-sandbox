@@ -1,13 +1,13 @@
 import React from "react";
 import { withStyles } from "@material-ui/styles";
 import PropTypes from "prop-types";
-
+import ProgressControl, { ProgressContolTypes } from "./ProgressControl";
 import ProgressSection, { ProgressStatusList } from "./ProgressSection";
 import { useStyles } from "./styles";
 
 export const progressTabStatus = { SUCCESS: "SUCCESS" };
 
-const ProgressBar = ({ classes, activeSection, progressText }) => {
+const ProgressBar = ({ classes, activeSection, progressText, stateSwitchOptions, demoProgressStatus }) => {
   const computeProgressStatus = (progressNumber, activeSection, progressStatus) => {
     if (progressNumber < activeSection || progressStatus === progressTabStatus.SUCCESS) {
       return ProgressStatusList.COMPLETED;
@@ -22,6 +22,12 @@ const ProgressBar = ({ classes, activeSection, progressText }) => {
 
   return (
     <div className={classes.tabsContainer}>
+      <ProgressControl 
+        type={ProgressContolTypes.BACK}
+        activeSection={activeSection}
+        demoProgressStatus={demoProgressStatus}
+        stateSwitchOptions={stateSwitchOptions}
+      />
       <ul>
         {progressText.map((text, index) => (
           <ProgressSection
@@ -32,6 +38,12 @@ const ProgressBar = ({ classes, activeSection, progressText }) => {
           />
         ))}
       </ul>
+      <ProgressControl
+        type={ProgressContolTypes.FORWARD}
+        activeSection={activeSection}
+        demoProgressStatus={demoProgressStatus}
+        stateSwitchOptions={stateSwitchOptions}
+      />
     </div>
   );
 };
@@ -39,6 +51,8 @@ const ProgressBar = ({ classes, activeSection, progressText }) => {
 ProgressBar.propTypes = {
   activeSection: PropTypes.number,
   progressText: PropTypes.arrayOf(PropTypes.string),
+  stateSwitchOptions: PropTypes.objectOf(PropTypes.func),
+  demoProgressStatus: PropTypes.object
 };
 
 export default withStyles(useStyles)(ProgressBar);

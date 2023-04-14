@@ -5,6 +5,7 @@ import AlertBox from "../../components/common/AlertBox";
 //const SERVICE_COMPONENT = = lazy(() => import("./path/to/service/folder));
 
 const ExampleService = lazy(() => import("./naint/example_service"));
+const ImageGeneration = lazy(() => import("./naint/image_generation"));
 
 class ThirdPartyCustomUIComponents {
   constructor() {
@@ -47,6 +48,12 @@ thirdPartyCustomUIComponents.addCustomUIComponent(
   "naint",
   "example_service",
   ExampleService
+);
+
+thirdPartyCustomUIComponents.addCustomUIComponent(
+  "naint",
+  "image_generation",
+  ImageGeneration
 );
 
 export default thirdPartyCustomUIComponents;

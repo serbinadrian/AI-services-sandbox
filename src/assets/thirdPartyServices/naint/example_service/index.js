@@ -10,7 +10,9 @@ import {
   restrictions,
   textInputPrototype,
   numbersInputPrototype,
-} from "./prototype";
+  serviceAnswerPrototype,
+  inscription,
+} from "./metadata";
 import { useStyles } from "./styles";
 import { withStyles } from "@material-ui/styles";
 
@@ -101,10 +103,10 @@ class ExampleService extends React.Component {
     const { text } = this.state.data;
     const textRestriction = this.helperText(
       text.length,
-      textInputPrototype.restrictions[0]
+      restrictions[textInputPrototype.restriction]
     );
     return (
-      <Grid item xs={1} container justify="center">
+      <Grid item xs={12} container justify="center">
         <OutlinedTextArea
           id={textInputPrototype.id}
           name={textInputPrototype.name}
@@ -124,10 +126,10 @@ class ExampleService extends React.Component {
     const { numbers } = this.state.data;
     const textRestriction = this.helperText(
       numbers.length,
-      numbersInputPrototype.restrictions[0]
+      restrictions[numbersInputPrototype.restriction]
     );
     return (
-      <Grid item xs={1} container justify="center">
+      <Grid item xs={12} container justify="center">
         <OutlinedTextArea
           id={numbersInputPrototype.id}
           name={numbersInputPrototype.name}
@@ -158,7 +160,7 @@ class ExampleService extends React.Component {
             onClick={this.submitAction}
             disabled={!this.canBeInvoked()}
           >
-            Invoke
+            {inscription.invokeButton}
           </Button>
         </Grid>
       </React.Fragment>
@@ -170,12 +172,12 @@ class ExampleService extends React.Component {
       <React.Fragment>
         <Grid container spacing={2} justify="flex-start">
           <OutlinedTextArea
-            id="result"
-            name="result"
-            label="Result is"
+            id={serviceAnswerPrototype.id}
+            name={serviceAnswerPrototype.name}
+            label={serviceAnswerPrototype.label}
             fullWidth={true}
             value={this.state.response.data}
-            rows={1}
+            rows={serviceAnswerPrototype.rows}
           />
         </Grid>
       </React.Fragment>
@@ -183,7 +185,6 @@ class ExampleService extends React.Component {
   }
 
   render() {
-    // const { classes } = this.props;
     if (this.props.isComplete) {
       return <>{this.serviceAnswer()}</>;
     }

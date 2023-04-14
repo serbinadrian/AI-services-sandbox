@@ -33,5 +33,15 @@ export const numbersInputPrototype = {
   rows: 1,
   restriction: "maxNumbersLength",
 };
+export const serviceAnswerPrototype = {
+  id: "result",
+  name: "result",
+  label: "Result is",
+  rows: 1,
+};
+
+export const inscription = {
+  invokeButton: "Invoke",
+};
 
 export const restrictions = { maxTextLength: 100, maxNumbersLength: 10 };

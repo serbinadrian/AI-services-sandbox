@@ -1,36 +1,36 @@
-// package: image_generation
-// file: imagegen.proto
+// package: example_service
+// file: example_service.proto
 
-var imagegen_pb = require("./imagegen_pb");
+var example_service_pb = require("./example_service_pb");
 var grpc = require("@improbable-eng/grpc-web").grpc;
 
-var image_generation = (function () {
-  function image_generation() {}
-  image_generation.serviceName = "image_generation.image_generation";
-  return image_generation;
+var example_service = (function () {
+  function example_service() {}
+  example_service.serviceName = "example_service.example_service";
+  return example_service;
 }());
 
-image_generation.Gen = {
-  methodName: "Gen",
-  service: image_generation,
+example_service.example_service = {
+  methodName: "example_service",
+  service: example_service,
   requestStream: false,
   responseStream: false,
-  requestType: imagegen_pb.Text,
-  responseType: imagegen_pb.Image
+  requestType: example_service_pb.Query,
+  responseType: example_service_pb.Answer
 };
 
-exports.image_generation = image_generation;
+exports.example_service = example_service;
 
-function image_generationClient(serviceHost, options) {
+function example_serviceClient(serviceHost, options) {
   this.serviceHost = serviceHost;
   this.options = options || {};
 }
 
-image_generationClient.prototype.gen = function gen(requestMessage, metadata, callback) {
+example_serviceClient.prototype.example_service = function example_service(requestMessage, metadata, callback) {
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  var client = grpc.unary(image_generation.Gen, {
+  var client = grpc.unary(example_service.example_service, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,
@@ -57,5 +57,5 @@ image_generationClient.prototype.gen = function gen(requestMessage, metadata, ca
   };
 };
 
-exports.image_generationClient = image_generationClient;
+exports.example_serviceClient = example_serviceClient;
 

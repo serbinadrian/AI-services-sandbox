@@ -5,190 +5,212 @@ import Button from "@material-ui/core/Button";
 import SvgIcon from "@material-ui/core/SvgIcon";
 import HoverIcon from "../../standardComponents/HoverIcon";
 import { example_service } from "./example_service_pb_service";
-import {
-  informationLinks,
-  restrictions,
-  textInputPrototype,
-  numbersInputPrototype,
-  serviceAnswerPrototype,
-  inscription,
-} from "./metadata";
+import { metadata } from "./metadata";
 import { useStyles } from "./styles";
 import { withStyles } from "@material-ui/styles";
 
 class ExampleService extends React.Component {
   constructor(props) {
+    const { state } = metadata.configuration;
     super(props);
     this.submitAction = this.submitAction.bind(this);
-    this.handleFormUpdate = this.handleFormUpdate.bind(this);
+    this.handleTextInput = this.handleTextInput.bind(this);
+    this.inputHelperFunction = this.inputHelperFunction.bind(this);
+    this.state = state;
 
-    this.state = {
-      response: {
-        data: "",
-      },
-      data: {
-        text: "",
-        numbers: "",
-      },
-    };
+    this.state.regexNumber = new RegExp("^[0-9]+$");
+    this.state.regexText = new RegExp("^[a-zA-Z]+$");
   }
 
   canBeInvoked() {
-    return false;
+    const { regexNumber, regexText, textInput, numberInput } = this.state;
+
+    return regexNumber.test(numberInput) && regexText.exec(textInput);
   }
 
-  handleFormUpdate(event) {
-    const { data } = this.state;
-    data[event.target.name] = event.target.value;
+  handleTextInput(event) {
+    let data = event.target.value;
     this.setState({
-      data: data,
+      [event.target.name]: data,
+    });
+  }
+
+  parseResponse(response) {
+    const { message, status, statusMessage } = response;
+    if (!this.isOk(status)) {
+      throw new Error(statusMessage);
+    }
+    this.setState({
+      response: message.getAnswer(),
     });
   }
 
   submitAction() {
-    const { data } = this.state;
-    const methodDescriptor = example_service["example_service"];
+    const { textInput, numbersInput } = this.state;
+    const { service } = metadata.configuration;
+
+    const methodDescriptor = example_service[service.method];
     const request = new methodDescriptor.requestType();
 
-    request.setText(data.text);
-    request.setNumbers(data.numbers);
+    request.setText(textInput);
+    request.setNumbers(numbersInput);
 
     const props = {
       request,
-      onEnd: (response) => {
-        const { message, status, statusMessage } = response;
-        if (status !== 0) {
-          throw new Error(statusMessage);
-        }
-        this.setState({
-          response: {
-            data: message.getAnswer(),
-          },
-        });
-      },
+      onEnd: (response) => this.parseResponse(response),
     };
 
     this.props.serviceClient.unary(methodDescriptor, props);
   }
 
   renderInfoBlock() {
+    const { informationLinks } = this.state;
+    const { information } = metadata.render.blocks;
+    const { labels } = metadata.render;
+    const links = Object.values(information);
+
     return (
       <Grid item xs container justify="flex-end">
-        {this.renderInfoBlockItems()}
-      </Grid>
-    );
-  }
-
-  renderInfoBlockItems() {
-    return (
-      <React.Fragment>
-        {informationLinks.map((informationLink) => (
-          <Grid item>
-            <HoverIcon text={informationLink.label} href={informationLink.link}>
+        {links.map((link) => (
+          <Grid item key={link.linkKey}>
+            <HoverIcon
+              text={labels[link.labelKey]}
+              href={informationLinks[link.linkKey]}
+            >
               <SvgIcon>
-                <path d={informationLink.svgPath} />
+                <path d={link.svgPath} />
               </SvgIcon>
             </HoverIcon>
           </Grid>
         ))}
-      </React.Fragment>
+      </Grid>
     );
   }
 
-  helperText(textLength, maxTextLength) {
-    return textLength + " / " + maxTextLength + " char ";
+  inputHelperFunction(textLength, restriction) {
+    const { labels } = metadata.render;
+    const { restrictions } = metadata.configuration;
+    return textLength + " / " + restrictions[restriction] + " " + labels.char;
   }
 
-  renderTextInput() {
-    const { text } = this.state.data;
-    const textRestriction = this.helperText(
-      text.length,
-      restrictions[textInputPrototype.restriction]
-    );
+  createHandleConfiguration(meta) {
+    const { handleKey, helperKey, restriction } = meta;
+    let InputHandlerConfiguration = {};
+    if (this[helperKey]) {
+      //helper is const string for single render and it have to be constructed before used -> call()
+      InputHandlerConfiguration["helperTxt"] = this[helperKey].call(
+        this,
+        this.state[meta.stateKey].length,
+        restriction
+      );
+    }
+    if (this[handleKey]) {
+      InputHandlerConfiguration["onChange"] = this[handleKey];
+    }
+    return InputHandlerConfiguration ?? [];
+  }
+
+  renderDigitsTextArea(meta) {
+    const { labels } = metadata.render;
+
+    let InputHandlerConfiguration = [];
+    if (meta.edit) {
+      InputHandlerConfiguration = this.createHandleConfiguration(meta);
+    }
     return (
       <Grid item xs={12} container justify="center">
         <OutlinedTextArea
-          id={textInputPrototype.id}
-          name={textInputPrototype.name}
-          label={textInputPrototype.label}
-          charLimit={restrictions.maxTextLength}
-          helperTxt={textRestriction}
           fullWidth={true}
-          value={text}
-          rows={textInputPrototype.rows}
-          onChange={this.handleFormUpdate}
+          id={meta.id}
+          name={meta.name}
+          rows={meta.rows}
+          label={labels[meta.labelKey]}
+          value={this.state[meta.stateKey]}
+          {...InputHandlerConfiguration}
         />
       </Grid>
     );
   }
 
-  renderNumbersInput() {
-    const { numbers } = this.state.data;
-    const textRestriction = this.helperText(
-      numbers.length,
-      restrictions[numbersInputPrototype.restriction]
-    );
+  renderLettersTextArea(meta) {
+    const { labels } = metadata.render;
+
+    let InputHandlerConfiguration = [];
+    if (meta.edit) {
+      InputHandlerConfiguration = this.createHandleConfiguration(meta);
+    }
     return (
       <Grid item xs={12} container justify="center">
         <OutlinedTextArea
-          id={numbersInputPrototype.id}
-          name={numbersInputPrototype.name}
-          label={numbersInputPrototype.label}
-          charLimit={restrictions.maxNumbersLength}
-          helperTxt={textRestriction}
           fullWidth={true}
-          value={numbers}
-          rows={numbersInputPrototype.rows}
-          onChange={this.handleFormUpdate}
+          id={meta.id}
+          name={meta.name}
+          rows={meta.rows}
+          label={labels[meta.labelKey]}
+          value={this.state[meta.stateKey]}
+          {...InputHandlerConfiguration}
         />
       </Grid>
     );
   }
 
-  renderServiceForm() {
+  renderInvokeButton() {
+    const { classes } = this.props;
+    const { labels } = metadata.render;
+
     return (
-      <React.Fragment>
-        <Grid container spacing={2} justify="flex-start">
-          {this.renderTextInput()}
-          {this.renderNumbersInput()}
-        </Grid>
+      <Grid item xs={12} className={classes.invokeButton}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={this.submitAction}
+          disabled={!this.canBeInvoked()}
+        >
+          {labels.invokeButton}
+        </Button>
+      </Grid>
+    );
+  }
+
+  renderServiceInput() {
+    const { numberInput } = metadata.render.blocks.input;
+    const { textInput } = metadata.render.blocks.input;
+
+    return (
+      <Grid container direction="column" justify="center">
+        {this.renderDigitsTextArea(numberInput)}
+        {this.renderLettersTextArea(textInput)}
         {this.renderInfoBlock()}
-        <Grid item xs={12} container justify="center">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={this.submitAction}
-            disabled={!this.canBeInvoked()}
-          >
-            {inscription.invokeButton}
-          </Button>
-        </Grid>
-      </React.Fragment>
+        {this.renderInvokeButton()}
+      </Grid>
     );
   }
 
-  serviceAnswer() {
+  renderServiceOutput() {
+    const { response } = this.state;
+    const { output } = metadata.render.blocks;
+    const { labels } = metadata.render;
+
+    if (!response) {
+      return <h4>{labels.noResponse}</h4>;
+    }
+
     return (
-      <React.Fragment>
-        <Grid container spacing={2} justify="flex-start">
-          <OutlinedTextArea
-            id={serviceAnswerPrototype.id}
-            name={serviceAnswerPrototype.name}
-            label={serviceAnswerPrototype.label}
-            fullWidth={true}
-            value={this.state.response.data}
-            rows={serviceAnswerPrototype.rows}
-          />
-        </Grid>
-      </React.Fragment>
+      <Grid container direction="column" justify="center">
+        {this.renderLettersTextArea(output.userNumberInput)}
+        {this.renderLettersTextArea(output.userTextInput)}
+        {this.renderLettersTextArea(output.serviceOutput)}
+        {this.renderInfoBlock()}
+      </Grid>
     );
   }
 
   render() {
-    if (this.props.isComplete) {
-      return <>{this.serviceAnswer()}</>;
+    if (!this.props.isComplete) {
+      return this.renderServiceInput();
+    } else {
+      return this.renderServiceOutput();
     }
-    return <>{this.renderServiceForm()}</>;
   }
 }
 

@@ -1,1 +1,5 @@
-export const useStyles = (theme) => ({});
+export const useStyles = (theme) => ({
+  invokeButton: {
+    textAlign: "center",
+  },
+});

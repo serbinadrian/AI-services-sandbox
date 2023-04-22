@@ -2,7 +2,7 @@ import React, { lazy } from "react";
 import AlertBox from "../../components/common/AlertBox";
 
 //EXAMPLE
-//const SERVICE_COMPONENT = = lazy(() => import("./path/to/service/folder));
+//const SERVICE_COMPONENT = lazy(() => import("./path/to/service/folder));
 
 const ExampleService = lazy(() => import("./naint/example_service"));
 

@@ -4,7 +4,7 @@ import OutlinedTextArea from "../../common/OutlinedTextArea";
 import Button from "@material-ui/core/Button";
 import SvgIcon from "@material-ui/core/SvgIcon";
 import HoverIcon from "../../standardComponents/HoverIcon";
-import AlertBox from "../../../../components/common/AlertBox"
+import AlertBox from "../../../../components/common/AlertBox";
 import { example_service } from "./example_service_pb_service";
 import { MODEL, BLOCKS, LABELS } from "./metadata";
 import { useStyles } from "./styles";
@@ -25,42 +25,38 @@ class ExampleService extends React.Component {
     super(props);
     this.submitAction = this.submitAction.bind(this);
     this.handleTextInput = this.handleTextInput.bind(this);
-    this.inputMaxLengthHelperFunction = this.inputMaxLengthHelperFunction.bind(this);
+    this.inputMaxLengthHelperFunction = this.inputMaxLengthHelperFunction.bind(
+      this
+    );
     this.state = state;
   }
 
-  makeErrors(errorKeys) {
+  makeError(errorKey) {
     const { errors } = LABELS;
-    let errorMessages = [];
+    let errorMessages = new Map();
 
-    errorKeys.forEach(errorKey => {
-      const errorMessage = errors[errorKey];
-      if (!errorMessages.includes(errorMessage)) {
-        errorMessages.push(errorMessage);
-      }
-    });
-
-    return errorMessages;
+    const errorMessage = errors[errorKey];
+    if (!errorMessages[errorKey]) {
+      return errorMessage;
+    }
   }
 
   getValidationMetaByTargetName(targetName) {
     const { inputBlocks } = BLOCKS;
 
-    console.log('targetName', targetName);
-
     switch (targetName) {
       case inputBlocks.NUMBERS_INPUT.name: {
-        const errorKey = valueRestrictions.ONLY_NUMBERS_REGEX.errorKey
+        const errorKey = valueRestrictions.ONLY_NUMBERS_REGEX.errorKey;
         return {
           regex: onlyNumbersRegex,
-          errorKey: errorKey
+          errorKey: errorKey,
         };
       }
       case inputBlocks.TEXT_INPUT.name: {
-        const errorKey = valueRestrictions.ONLY_LATINS_REGEX.errorKey
+        const errorKey = valueRestrictions.ONLY_LATINS_REGEX.errorKey;
         return {
           regex: onlyLatinsRegex,
-          errorKey: errorKey
+          errorKey: errorKey,
         };
       }
       default: {
@@ -74,35 +70,36 @@ class ExampleService extends React.Component {
   }
 
   validateInput(targetName, targetValue) {
-    const { errors } = this.state.status
-    let errorKeys = [];
+    const { errors } = this.state.status;
     let isAllRequirementsMet = true;
     const { regex, errorKey } = this.getValidationMetaByTargetName(targetName);
 
     if (!this.isValidInput(regex, targetValue)) {
-      errorKeys.push(errorKey)
+      errors.set(errorKey, this.makeError(errorKey));
+    } else {
+      errors.delete(errorKey);
     }
 
-    if (errorKeys.length > 0 || errors.length > 0) {
+    if (errors.size > 0) {
       isAllRequirementsMet = false;
     }
 
-    const newErrors = this.makeErrors(errorKeys);
-
     this.setState({
       status: {
-        errors: newErrors,
-        isAllRequirementsMet: isAllRequirementsMet
-      }
+        errors: errors,
+        isAllRequirementsMet: isAllRequirementsMet,
+      },
     });
   }
 
   canBeInvoked() {
     const { status, textInputValue, numberInputValue } = this.state;
     const { isAllRequirementsMet } = status;
-    return isAllRequirementsMet &&
+    return (
+      isAllRequirementsMet &&
       textInputValue !== EMPTY_STRING &&
       numberInputValue !== EMPTY_STRING
+    );
   }
 
   isOk(status) {
@@ -110,7 +107,8 @@ class ExampleService extends React.Component {
   }
 
   handleTextInput(event) {
-    const targetName = event.target.name, targetValue = event.target.value;
+    const targetName = event.target.name,
+      targetValue = event.target.value;
     this.validateInput(targetName, targetValue);
     this.setState({
       [targetName]: targetValue,
@@ -148,7 +146,13 @@ class ExampleService extends React.Component {
   inputMaxLengthHelperFunction(textLengthValue, restrictionKey) {
     const { common } = LABELS;
 
-    return textLengthValue + SPACED_SLASH + rangeRestrictions[restrictionKey].max + SPACE + common.CHARS;
+    return (
+      textLengthValue +
+      SPACED_SLASH +
+      rangeRestrictions[restrictionKey].max +
+      SPACE +
+      common.CHARS
+    );
   }
 
   createHandleConfiguration(meta) {
@@ -202,7 +206,7 @@ class ExampleService extends React.Component {
     return (
       <Grid item xs container justify="flex-end">
         {links.map((link) => (
-          <Grid item key={link.linkKey} >
+          <Grid item key={link.linkKey}>
             <HoverIcon
               text={common[link.labelKey]}
               href={informationLinks[link.linkKey]}
@@ -216,7 +220,6 @@ class ExampleService extends React.Component {
       </Grid>
     );
   }
-
 
   renderInvokeButton() {
     const { classes } = this.props;
@@ -236,16 +239,20 @@ class ExampleService extends React.Component {
     );
   }
 
-  renderValidationStatusBlock(errors) {
+  renderValidationStatusBlocks(errors) {
     const { classes } = this.props;
-
+    const arrayErrorKeys = Array.from(errors.keys());
     return (
       <Grid item xs={12} container className={classes.alertsContainer}>
-        {errors.map(errorMessage => (
-          <AlertBox message={errorMessage} className={classes.alertMessage} key={errorMessage} />
+        {arrayErrorKeys.map((arrayErrorKey) => (
+          <AlertBox
+            message={errors.get(arrayErrorKey)}
+            className={classes.alertMessage}
+            key={arrayErrorKey}
+          />
         ))}
       </Grid>
-    )
+    );
   }
 
   renderServiceInput() {
@@ -258,7 +265,7 @@ class ExampleService extends React.Component {
         {this.renderTextArea(inputBlocks.TEXT_INPUT)}
         {this.renderInfoBlock()}
         {this.renderInvokeButton()}
-        {errors.length ? this.renderValidationStatusBlock(errors) : null}
+        {errors.size ? this.renderValidationStatusBlocks(errors) : null}
       </Grid>
     );
   }
@@ -269,11 +276,7 @@ class ExampleService extends React.Component {
     const { status } = LABELS;
 
     if (!response) {
-      return (
-        <h4>
-          {status.NO_RESPONSE}
-        </h4>
-      );
+      return <h4>{status.NO_RESPONSE}</h4>;
     }
 
     return (

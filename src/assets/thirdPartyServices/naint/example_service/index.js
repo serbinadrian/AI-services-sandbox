@@ -4,7 +4,7 @@ import OutlinedTextArea from "../../common/OutlinedTextArea";
 import Button from "@material-ui/core/Button";
 import SvgIcon from "@material-ui/core/SvgIcon";
 import HoverIcon from "../../standardComponents/HoverIcon";
-import AlertBox from "../../../../components/common/AlertBox";
+import AlertBox, { alertTypes } from "../../../../components/common/AlertBox";
 import { example_service } from "./example_service_pb_service";
 import { MODEL, BLOCKS, LABELS } from "./metadata";
 import { useStyles } from "./styles";
@@ -19,6 +19,11 @@ const OK_CODE = 0;
 const SPACE = " ";
 const SPACED_SLASH = " / ";
 
+const outlinedTextAreaAdditionalProps = {
+  HELPER: "helperTxt",
+  ON_CHANGE: "onChange",
+}
+
 class ExampleService extends React.Component {
   constructor(props) {
     const { state } = MODEL;
@@ -31,14 +36,9 @@ class ExampleService extends React.Component {
     this.state = state;
   }
 
-  makeError(errorKey) {
+  getErrorMessageByKey(errorKey) {
     const { errors } = LABELS;
-    let errorMessages = new Map();
-
-    const errorMessage = errors[errorKey];
-    if (!errorMessages[errorKey]) {
-      return errorMessage;
-    }
+    return errors[errorKey];
   }
 
   getValidationMetaByTargetName(targetName) {
@@ -71,11 +71,12 @@ class ExampleService extends React.Component {
 
   validateInput(targetName, targetValue) {
     const { errors } = this.state.status;
-    let isAllRequirementsMet = true;
     const { regex, errorKey } = this.getValidationMetaByTargetName(targetName);
+    let isAllRequirementsMet = true;
 
     if (!this.isValidInput(regex, targetValue)) {
-      errors.set(errorKey, this.makeError(errorKey));
+      const errorMessage = this.getErrorMessageByKey(errorKey);
+      errors.set(errorKey, errorMessage);
     } else {
       errors.delete(errorKey);
     }
@@ -95,6 +96,7 @@ class ExampleService extends React.Component {
   canBeInvoked() {
     const { status, textInputValue, numberInputValue } = this.state;
     const { isAllRequirementsMet } = status;
+
     return (
       isAllRequirementsMet &&
       textInputValue !== EMPTY_STRING &&
@@ -107,9 +109,11 @@ class ExampleService extends React.Component {
   }
 
   handleTextInput(event) {
-    const targetName = event.target.name,
-      targetValue = event.target.value;
+    const targetName = event.target.name;
+    const targetValue = event.target.value;
+
     this.validateInput(targetName, targetValue);
+
     this.setState({
       [targetName]: targetValue,
     });
@@ -117,6 +121,7 @@ class ExampleService extends React.Component {
 
   parseResponse(response) {
     const { message, status, statusMessage } = response;
+
     if (!this.isOk(status)) {
       throw new Error(statusMessage);
     }
@@ -144,14 +149,14 @@ class ExampleService extends React.Component {
   }
 
   inputMaxLengthHelperFunction(textLengthValue, restrictionKey) {
-    const { common } = LABELS;
+    const { labels } = LABELS;
 
     return (
       textLengthValue +
       SPACED_SLASH +
       rangeRestrictions[restrictionKey].max +
       SPACE +
-      common.CHARS
+      labels.CHARS
     );
   }
 
@@ -162,25 +167,29 @@ class ExampleService extends React.Component {
 
     if (this[helperFunctionKey]) {
       //helper is const string for single render and it have to be constructed before used -> call()
-      InputHandlerConfiguration["helperTxt"] = this[helperFunctionKey].call(
-        this,
-        this.state[meta.stateKey].length,
-        rangeRestrictionKey
-      );
+      InputHandlerConfiguration[outlinedTextAreaAdditionalProps.HELPER]
+        = this[helperFunctionKey].call(
+          this,
+          this.state[meta.stateKey].length,
+          rangeRestrictionKey
+        );
     }
     if (this[handleFunctionKey]) {
-      InputHandlerConfiguration["onChange"] = this[handleFunctionKey];
+      InputHandlerConfiguration[outlinedTextAreaAdditionalProps.ON_CHANGE]
+        = this[handleFunctionKey];
     }
-    return InputHandlerConfiguration ?? [];
+    return InputHandlerConfiguration;
   }
 
   renderTextArea(meta) {
-    const { common } = LABELS;
+    const { labels } = LABELS;
 
     let InputHandlerConfiguration = [];
+
     if (meta.edit) {
       InputHandlerConfiguration = this.createHandleConfiguration(meta);
     }
+
     return (
       <Grid item xs={12} container justify="center">
         <OutlinedTextArea
@@ -188,7 +197,7 @@ class ExampleService extends React.Component {
           id={meta.id}
           name={meta.name}
           rows={meta.rows}
-          label={common[meta.labelKey]}
+          label={labels[meta.labelKey]}
           value={this.state[meta.stateKey]}
           charLimit={rangeRestrictions[meta.rangeRestrictionKey].max}
           {...InputHandlerConfiguration}
@@ -200,7 +209,8 @@ class ExampleService extends React.Component {
   renderInfoBlock() {
     const { informationLinks } = MODEL;
     const { informationBlocks } = BLOCKS;
-    const { common } = LABELS;
+    const { labels } = LABELS;
+
     const links = Object.values(informationBlocks);
 
     return (
@@ -208,7 +218,7 @@ class ExampleService extends React.Component {
         {links.map((link) => (
           <Grid item key={link.linkKey}>
             <HoverIcon
-              text={common[link.labelKey]}
+              text={labels[link.labelKey]}
               href={informationLinks[link.linkKey]}
             >
               <SvgIcon>
@@ -223,7 +233,7 @@ class ExampleService extends React.Component {
 
   renderInvokeButton() {
     const { classes } = this.props;
-    const { common } = LABELS;
+    const { labels } = LABELS;
 
     return (
       <Grid item xs={12} className={classes.invokeButton}>
@@ -233,7 +243,7 @@ class ExampleService extends React.Component {
           onClick={this.submitAction}
           disabled={!this.canBeInvoked()}
         >
-          {common.INVOKE_BUTTON}
+          {labels.INVOKE_BUTTON}
         </Button>
       </Grid>
     );
@@ -241,11 +251,14 @@ class ExampleService extends React.Component {
 
   renderValidationStatusBlocks(errors) {
     const { classes } = this.props;
-    const arrayErrorKeys = Array.from(errors.keys());
+
+    const errorKeysArray = Array.from(errors.keys());
+
     return (
       <Grid item xs={12} container className={classes.alertsContainer}>
-        {arrayErrorKeys.map((arrayErrorKey) => (
+        {errorKeysArray.map((arrayErrorKey) => (
           <AlertBox
+            type={alertTypes.ERROR}
             message={errors.get(arrayErrorKey)}
             className={classes.alertMessage}
             key={arrayErrorKey}

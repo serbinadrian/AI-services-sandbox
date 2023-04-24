@@ -121,7 +121,7 @@ export const BLOCKS = {
 
 const { rangeRestrictions } = MODEL.restrictions;
 export const LABELS = {
-  common: {
+  labels: {
     CHARS: "characters",
     TEXT_INPUT: "Only Latin",
     NUMBER_INPUT: "Only number",

@@ -22,7 +22,8 @@ const SPACED_SLASH = " / ";
 const outlinedTextAreaAdditionalProps = {
   HELPER: "helperTxt",
   ON_CHANGE: "onChange",
-}
+  CHAR_LIMIT: "charLimit",
+};
 
 class ExampleService extends React.Component {
   constructor(props) {
@@ -125,6 +126,9 @@ class ExampleService extends React.Component {
     if (!this.isOk(status)) {
       throw new Error(statusMessage);
     }
+
+    //In some project, servise response is array of objects,
+
     this.setState({
       response: message.getAnswer(),
     });
@@ -167,16 +171,18 @@ class ExampleService extends React.Component {
 
     if (this[helperFunctionKey]) {
       //helper is const string for single render and it have to be constructed before used -> call()
-      InputHandlerConfiguration[outlinedTextAreaAdditionalProps.HELPER]
-        = this[helperFunctionKey].call(
-          this,
-          this.state[meta.stateKey].length,
-          rangeRestrictionKey
-        );
+      InputHandlerConfiguration[outlinedTextAreaAdditionalProps.HELPER] = this[
+        helperFunctionKey
+      ].call(this, this.state[meta.stateKey].length, rangeRestrictionKey);
     }
     if (this[handleFunctionKey]) {
-      InputHandlerConfiguration[outlinedTextAreaAdditionalProps.ON_CHANGE]
-        = this[handleFunctionKey];
+      InputHandlerConfiguration[
+        outlinedTextAreaAdditionalProps.ON_CHANGE
+      ] = this[handleFunctionKey];
+    }
+    if (rangeRestrictions[meta.rangeRestrictionKey].max) {
+      InputHandlerConfiguration[outlinedTextAreaAdditionalProps.CHAR_LIMIT] =
+        rangeRestrictions[meta.rangeRestrictionKey].max;
     }
     return InputHandlerConfiguration;
   }
@@ -199,12 +205,49 @@ class ExampleService extends React.Component {
           rows={meta.rows}
           label={labels[meta.labelKey]}
           value={this.state[meta.stateKey]}
-          charLimit={rangeRestrictions[meta.rangeRestrictionKey].max}
           {...InputHandlerConfiguration}
         />
       </Grid>
     );
   }
+
+  //If you need rendered block_set for service output:
+  // renderOutputLine(outputKey) {
+  //   const { classes } = this.props;
+  //   const { response } = this.state;
+
+  //   return (
+  //     <Grid
+  //       className={classes.outputLine}
+  //       item
+  //       xs={12}
+  //       container
+  //       justify="flex-start"
+  //       key={outputKey}
+  //     >
+  //       <Grid className={classes.responseCategory} item xs={3}>
+  //         {outputKey}
+  //       </Grid>
+  //       <Grid item xs={9}>
+  //         {response[outputKey]}
+  //       </Grid>
+  //     </Grid>
+  //   );
+  // }
+
+  // renderOutputBlockSet() {
+  //   const { labels } = LABELS;
+  //   const { classes } = this.props;
+  //   const { response } = this.state;
+  //   const outputKeysArray = Object.keys(response);
+
+  //   return (
+  //     <Grid item xs={12} container justify="flex-start">
+  //       <span className={classes.outputLabel}>{labels.SERVICE_OUTPUT}</span>
+  //       {outputKeysArray.map((outputKey) => this.renderOutputLine(outputKey))}
+  //     </Grid>
+  //   );
+  // }
 
   renderInfoBlock() {
     const { informationLinks } = MODEL;

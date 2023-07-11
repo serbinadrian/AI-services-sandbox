@@ -96,6 +96,13 @@ export const BLOCKS = {
       stateKey: "numberInputValue",
       labelKey: "NUMBER_INPUT",
     },
+    //If you need rendered block_set output
+    //  SERVICE_OUTPUT: {
+    //    type: "block-set",
+    //    name: "service-response",
+    //    stateKey: "response",
+    //    labelKey: "SERVICE_OUTPUT",
+    //  },
   },
   informationBlocks: {
     CODE: {

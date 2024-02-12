@@ -1,7 +1,10 @@
 import React, { lazy } from "react";
 import AlertBox from "../../components/common/AlertBox";
 
-const ImageGeneration = lazy(()=> import("./naint/image_generation"));
+//EXAMPLE
+//const SERVICE_COMPONENT = lazy(() => import("./path/to/service/folder));
+
+const ExampleService = lazy(() => import("./naint/example_service"));
 
 class ThirdPartyCustomUIComponents {
   constructor() {
@@ -14,9 +17,16 @@ class ThirdPartyCustomUIComponents {
   };
 
   componentFor = (orgId, serviceId) => {
-    const CustomUIComponent = this.customUIComponents[this._generateUniqueID(orgId, serviceId)];
+    const CustomUIComponent = this.customUIComponents[
+      this._generateUniqueID(orgId, serviceId)
+    ];
     if (!CustomUIComponent) {
-      return () => <AlertBox type="error" message="No Component matched. Please check the orgId and serviceId" />;
+      return () => (
+        <AlertBox
+          type="error"
+          message="No Component matched. Please check the orgId and serviceId"
+        />
+      );
     }
     return CustomUIComponent;
   };
@@ -26,7 +36,17 @@ class ThirdPartyCustomUIComponents {
 
 const thirdPartyCustomUIComponents = new ThirdPartyCustomUIComponents();
 
+//EXAMPLE
+// thirdPartyCustomUIComponents.addCustomUIComponent(
+//   [ORG_ID],
+//   [SERVICE_ID],
+//   [SERVICE_COMPONENT]
+// );
 
-thirdPartyCustomUIComponents.addCustomUIComponent("naint", "image_generation", ImageGeneration);
+thirdPartyCustomUIComponents.addCustomUIComponent(
+  "naint",
+  "example_service",
+  ExampleService
+);
 
 export default thirdPartyCustomUIComponents;

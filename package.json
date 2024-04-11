@@ -24,6 +24,9 @@
     "redux": "^4.0.1",
     "snet-sdk-web": "3.0.0"
   },
+  "resolutions": {
+    "concat-stream": "github:singnet/concat-stream"
+  },
   "scripts": {
     "sandbox": "npm start",
     "start": "react-scripts --openssl-legacy-provider start"
